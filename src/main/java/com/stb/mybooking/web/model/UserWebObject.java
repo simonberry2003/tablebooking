@@ -1,19 +1,18 @@
 package com.stb.mybooking.web.model;
 
 public class UserWebObject {
-	private String id;
+	private String emailAddress;
 	private String firstName;
 	private String lastName;
-	private String emailAddress;
+	
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+	
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
 
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
 	public String getFirstName() {
 		return firstName;
 	}
@@ -28,13 +27,5 @@ public class UserWebObject {
 	
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
-	}
-	
-	public String getEmailAddress() {
-		return emailAddress;
-	}
-	
-	public void setEmailAddress(String emailAddress) {
-		this.emailAddress = emailAddress;
 	}
 }

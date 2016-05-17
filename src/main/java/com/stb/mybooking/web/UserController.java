@@ -41,6 +41,9 @@ public class UserController {
     	
     	UserDomainObject domainUser = mapper.map(registerUserRequest, UserDomainObject.class);
     	domainUser = userService.Register(domainUser);
+    	if (domainUser == null) {
+    		return new ResponseEntity<UserWebObject>(HttpStatus.CONFLICT);
+    	}
     	UserWebObject webUser = mapper.map(domainUser, UserWebObject.class);
 		return new ResponseEntity<UserWebObject>(webUser, HttpStatus.OK);
     }

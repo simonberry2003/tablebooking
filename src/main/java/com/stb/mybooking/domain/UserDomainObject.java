@@ -1,21 +1,18 @@
 package com.stb.mybooking.domain;
 
-import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.google.common.base.MoreObjects;
+
+@Document(collection = "users")
 public class UserDomainObject {
-	private ObjectId id;
+	
+	@Id
+	private String emailAddress;
 	private String firstName;
 	private String lastName;
-	private String emailAddress;
 	private String password;
-	
-	public ObjectId getId() {
-		return id;
-	}
-	
-	public void setId(ObjectId id) {
-		this.id = id;
-	}
 	
 	public String getFirstName() {
 		return firstName;
@@ -51,5 +48,12 @@ public class UserDomainObject {
 
 	public boolean HasPassword(String password) {
 		return this.password.equals(password);
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+			.add("emailAddress", emailAddress)
+			.toString();
 	}
 }
