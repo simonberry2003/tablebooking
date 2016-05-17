@@ -32,27 +32,28 @@ public class UserController {
 		this.mapper = Preconditions.checkNotNull(mapper);
 	}
 	
-    @ApiOperation(value = "registerUser", nickname = "registerUser")
+    @ApiOperation(value = "register", nickname = "register")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "user", value = "the user to register", required = true, dataType = "RegisterUserRequestWebObject", paramType = "body")
+        @ApiImplicitParam(name = "registerUserRequest", value = "the register user request", required = true, dataType = "RegisterUserRequestWebObject", paramType = "body")
     })
     @RequestMapping(method = RequestMethod.POST, path="/register-user", produces = "application/json")
-    public ResponseEntity<UserWebObject> registerUser(@RequestBody RegisterUserRequestWebObject user) {
-    	UserDomainObject domainUser = mapper.map(user, UserDomainObject.class);
+    public ResponseEntity<UserWebObject> register(@RequestBody RegisterUserRequestWebObject registerUserRequest) {
+    	
+    	UserDomainObject domainUser = mapper.map(registerUserRequest, UserDomainObject.class);
     	domainUser = userService.Register(domainUser);
     	UserWebObject webUser = mapper.map(domainUser, UserWebObject.class);
 		return new ResponseEntity<UserWebObject>(webUser, HttpStatus.OK);
     }
 
-    @ApiOperation(value = "logonUser", nickname = "logonUser")
+    @ApiOperation(value = "logon", nickname = "logon")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "logonRequest", value = "the logon request", required = true, dataType = "UserLogonRequestWebObject", paramType = "body")
     })
     @RequestMapping(method = RequestMethod.POST, path="/logon-user", produces = "application/json")
     public ResponseEntity<UserWebObject> logonUser(@RequestBody UserLogonRequestWebObject logonRequest) {
+    	
     	UserDomainObject domainUser = userService.Logon(logonRequest.getEmailAddress(), logonRequest.getPassword());
-    	if (domainUser == null)
-    	{
+    	if (domainUser == null) {
     		return new ResponseEntity<UserWebObject>(HttpStatus.UNAUTHORIZED);
     	}
     	UserWebObject webUser = mapper.map(domainUser, UserWebObject.class);
