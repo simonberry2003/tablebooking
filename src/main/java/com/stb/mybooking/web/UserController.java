@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Preconditions;
@@ -42,10 +43,10 @@ public class UserController {
     	UserDomainObject domainUser = mapper.map(registerUserRequest, UserDomainObject.class);
     	domainUser = userService.Register(domainUser);
     	if (domainUser == null) {
-    		return new ResponseEntity<UserWebObject>(HttpStatus.CONFLICT);
+    		return new ResponseEntity<>(HttpStatus.CONFLICT);
     	}
     	UserWebObject webUser = mapper.map(domainUser, UserWebObject.class);
-		return new ResponseEntity<UserWebObject>(webUser, HttpStatus.OK);
+		return new ResponseEntity<>(webUser, HttpStatus.OK);
     }
 
     @ApiOperation(value = "logon", nickname = "logon")
@@ -53,13 +54,27 @@ public class UserController {
         @ApiImplicitParam(name = "logonRequest", value = "the logon request", required = true, dataType = "UserLogonRequestWebObject", paramType = "body")
     })
     @RequestMapping(method = RequestMethod.POST, path="/logon-user", produces = "application/json")
-    public ResponseEntity<UserWebObject> logonUser(@RequestBody UserLogonRequestWebObject logonRequest) {
+    public ResponseEntity<UserWebObject> logon(@RequestBody UserLogonRequestWebObject logonRequest) {
     	
     	UserDomainObject domainUser = userService.Logon(logonRequest.getEmailAddress(), logonRequest.getPassword());
     	if (domainUser == null) {
-    		return new ResponseEntity<UserWebObject>(HttpStatus.UNAUTHORIZED);
+    		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     	}
     	UserWebObject webUser = mapper.map(domainUser, UserWebObject.class);
-		return new ResponseEntity<UserWebObject>(webUser, HttpStatus.OK);
+		return new ResponseEntity<>(webUser, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "confirmEmail", nickname = "confirmEmail")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "emailAddress", value = "a user's email", required = true, dataType = "String", paramType = "query"),
+        @ApiImplicitParam(name = "confirmationToken", value = "the token allocated during registration", required = true, dataType = "String", paramType = "query")
+    })
+    @RequestMapping(method = RequestMethod.GET, path="/confirm-user-email")
+    public ResponseEntity<Void> confirmEmail(@RequestParam String emailAddress, @RequestParam String confirmationToken) {
+    	
+    	if (userService.confirmEmail(emailAddress, confirmationToken)) {
+    		return new ResponseEntity<>(HttpStatus.OK);
+    	}
+    	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }

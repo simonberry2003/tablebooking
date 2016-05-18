@@ -36,4 +36,9 @@ public class UserRepositoryImpl extends SimpleMongoRepository<UserDomainObject, 
 	public UserDomainObject getByEmail(String emailAddress) {
 		return findOne(emailAddress);
 	}
+
+	@Override
+	public UserDomainObject update(UserDomainObject user) {
+		return save(user);
+	}
 }
