@@ -9,6 +9,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import com.stb.mybooking.authentication.DemoAuthenticationFilter;
+import com.stb.mybooking.authentication.DemoAuthenticationProvider;
 
 @Configuration
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
@@ -16,6 +20,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired private UserDetailsService userDetailsService;
 	@Autowired private PasswordEncoder passwordEncoder;
+	@Autowired private DemoAuthenticationProvider demoAuthenticationProvider;
 	
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -23,11 +28,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 		http.authorizeRequests()
         	.anyRequest()
-        	.permitAll();	
+        	.permitAll();
+		http.addFilterBefore(new DemoAuthenticationFilter(), BasicAuthenticationFilter.class);		
     }
 	
 	@Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+        auth.authenticationProvider(demoAuthenticationProvider);   
     }	
 }
