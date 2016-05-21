@@ -1,20 +1,18 @@
 package com.stb.mybooking.domain;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.stb.mybooking.validator.EmailValidator;
 
-@SuppressWarnings("serial")
 @Document(collection = "users")
-public class UserDomainObject implements UserDetails {
+public class UserDomainObject {
 	
 	@Id
 	private String emailAddress;
@@ -55,7 +53,6 @@ public class UserDomainObject implements UserDetails {
 		this.emailAddress = emailAddress;
 	}
 
-	@Override
 	public String getPassword() {
 		return password;
 	}
@@ -86,33 +83,13 @@ public class UserDomainObject implements UserDetails {
 		password = passwordEncoder.encode(password);
 	}
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return new ArrayList<>();
-	}
-
-	@Override
-	public String getUsername() {
-		return emailAddress;
-	}
-
-	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		return true;
-	}
-
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return emailConfirmed;
+	public List<String> validate(EmailValidator emailValidator) {
+		List<String> errors = new ArrayList<>();
+		
+		if (!emailValidator.validate(emailAddress)) {
+			errors.add("Email address is not valid");
+		}
+			
+		return errors;
 	}
 }

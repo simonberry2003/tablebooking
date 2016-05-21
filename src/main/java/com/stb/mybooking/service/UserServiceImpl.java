@@ -1,49 +1,64 @@
 package com.stb.mybooking.service;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 import com.stb.mybooking.domain.UserDomainObject;
+import com.stb.mybooking.job.JobScheduler;
+import com.stb.mybooking.job.email.SendEmailJob;
 import com.stb.mybooking.logging.LogFactory;
 import com.stb.mybooking.repository.UserRepository;
 import com.stb.mybooking.token.TokenGenerator;
+import com.stb.mybooking.validator.EmailValidator;
 
 @Service
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService {
 
 	private final Logger logger;
 	private final UserRepository userRepository;
 	private final TokenGenerator tokenGenerator;
 	private final PasswordEncoder passwordEncoder;
+	private final EmailValidator emailValidator;
+	private final JobScheduler jobScheduler;
 	
 	@Autowired
 	public UserServiceImpl(
 			LogFactory logFactory, 
 			UserRepository userRepository, 
 			TokenGenerator tokenGenerator,
-			PasswordEncoder passwordEncoder) {
+			PasswordEncoder passwordEncoder,
+			EmailValidator emailValidator,
+			JobScheduler jobScheduler) {
 		
 		this.logger = logFactory.create(this);
 		this.userRepository = Preconditions.checkNotNull(userRepository);
 		this.tokenGenerator = Preconditions.checkNotNull(tokenGenerator);
 		this.passwordEncoder = Preconditions.checkNotNull(passwordEncoder);
+		this.emailValidator = Preconditions.checkNotNull(emailValidator);
+		this.jobScheduler = Preconditions.checkNotNull(jobScheduler);
 	}
 	
 	@Override
 	public UserDomainObject Register(UserDomainObject user) {
 
+		List<String> errors = user.validate(emailValidator);
+		if (errors.size() > 0) {
+			throw new RuntimeException(errors.toString());
+		}
+			
 		user.setToken(tokenGenerator.Generate());
 		user.encodePassword(passwordEncoder);
 		user = userRepository.create(user);
 		if (user != null) {
-			// TODO: Send email
 			logger.debug("Sending email to {}", user.getEmailAddress());
+			SendEmailJob job = new SendEmailJob();
+			job.setRecipient(user.getEmailAddress());
+			jobScheduler.enqueue(job);
 		}
 		return user;
 	}
@@ -66,15 +81,5 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 			return true;
 		}
 		return false;
-	}
-
-	@Override
-	public UserDetails loadUserByUsername(String emailAddress) throws UsernameNotFoundException {
-		
-		UserDomainObject user = userRepository.getByEmail(emailAddress);
-		if (user == null) {
-			throw new UsernameNotFoundException("No such user");
-		}
-		return user;
 	}
 }
