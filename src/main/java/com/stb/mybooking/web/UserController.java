@@ -22,6 +22,7 @@ import com.stb.mybooking.web.model.UserLogonRequestWebObject;
 import com.stb.mybooking.web.model.UserWebObject;
 
 @RestController
+@RequestMapping("users")
 public class UserController {
 
 	private final UserService userService;
@@ -37,7 +38,7 @@ public class UserController {
     @ApiImplicitParams({
         @ApiImplicitParam(name = "registerUserRequest", value = "the register user request", required = true, dataType = "RegisterUserRequestWebObject", paramType = "body")
     })
-    @RequestMapping(method = RequestMethod.POST, path="/register-user", produces = "application/json")
+    @RequestMapping(method = RequestMethod.POST, path="/register", produces = "application/json")
     public ResponseEntity<UserWebObject> register(@RequestBody RegisterUserRequestWebObject registerUserRequest) {
     	
     	UserDomainObject domainUser = mapper.map(registerUserRequest, UserDomainObject.class);
@@ -53,7 +54,7 @@ public class UserController {
     @ApiImplicitParams({
         @ApiImplicitParam(name = "logonRequest", value = "the logon request", required = true, dataType = "UserLogonRequestWebObject", paramType = "body")
     })
-    @RequestMapping(method = RequestMethod.POST, path="/logon-user", produces = "application/json")
+    @RequestMapping(method = RequestMethod.POST, path="/logon", produces = "application/json")
     public ResponseEntity<UserWebObject> logon(@RequestBody UserLogonRequestWebObject logonRequest) {
     	
     	UserDomainObject domainUser = userService.Logon(logonRequest.getEmailAddress(), logonRequest.getPassword());
@@ -69,7 +70,7 @@ public class UserController {
         @ApiImplicitParam(name = "emailAddress", value = "a user's email", required = true, dataType = "String", paramType = "query"),
         @ApiImplicitParam(name = "confirmationToken", value = "the token allocated during registration", required = true, dataType = "String", paramType = "query")
     })
-    @RequestMapping(method = RequestMethod.GET, path="/confirm-user-email")
+    @RequestMapping(method = RequestMethod.GET, path="/confirm-email")
     public ResponseEntity<Void> confirmEmail(@RequestParam String emailAddress, @RequestParam String confirmationToken) {
     	
     	if (userService.confirmEmail(emailAddress, confirmationToken)) {
