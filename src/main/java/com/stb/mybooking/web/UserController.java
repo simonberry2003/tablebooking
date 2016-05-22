@@ -34,13 +34,18 @@ public class UserController {
 		this.mapper = Preconditions.checkNotNull(mapper);
 	}
 	
+	/**
+	 * Register a new user
+	 * @param registerUserRequest
+	 * @return registered user
+	 */
     @ApiOperation(value = "register", nickname = "register")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "registerUserRequest", value = "the register user request", required = true, dataType = "RegisterUserRequestWebObject", paramType = "body")
     })
     @RequestMapping(method = RequestMethod.POST, path="/register", produces = "application/json")
     public ResponseEntity<UserWebObject> register(@RequestBody RegisterUserRequestWebObject registerUserRequest) {
-    	
+
     	UserDomainObject domainUser = mapper.map(registerUserRequest, UserDomainObject.class);
     	domainUser = userService.Register(domainUser);
     	if (domainUser == null) {
@@ -50,6 +55,11 @@ public class UserController {
 		return new ResponseEntity<>(webUser, HttpStatus.OK);
     }
 
+    /**
+     * Logon a user
+     * @param logonRequest
+     * @return the logged in user
+     */
     @ApiOperation(value = "logon", nickname = "logon")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "logonRequest", value = "the logon request", required = true, dataType = "UserLogonRequestWebObject", paramType = "body")
@@ -65,6 +75,12 @@ public class UserController {
 		return new ResponseEntity<>(webUser, HttpStatus.OK);
     }
 
+    /**
+     * Confirm a user's email address 
+     * @param emailAddress the email address
+     * @param confirmationToken the confirmation token
+     * @return
+     */
     @ApiOperation(value = "confirmEmail", nickname = "confirmEmail")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "emailAddress", value = "a user's email", required = true, dataType = "String", paramType = "query"),

@@ -4,11 +4,14 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 import com.stb.mybooking.domain.UserDomainObject;
+import com.stb.mybooking.email.EmailMessageFactory;
 import com.stb.mybooking.job.JobScheduler;
 import com.stb.mybooking.job.email.SendEmailJob;
 import com.stb.mybooking.logging.LogFactory;
@@ -25,15 +28,19 @@ public class UserServiceImpl implements UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final EmailValidator emailValidator;
 	private final JobScheduler jobScheduler;
+	private final JavaMailSender javaMailSender;
+	private final EmailMessageFactory emailMessageFactory;
 	
 	@Autowired
 	public UserServiceImpl(
-			LogFactory logFactory, 
-			UserRepository userRepository, 
-			TokenGenerator tokenGenerator,
-			PasswordEncoder passwordEncoder,
-			EmailValidator emailValidator,
-			JobScheduler jobScheduler) {
+		LogFactory logFactory, 
+		UserRepository userRepository, 
+		TokenGenerator tokenGenerator,
+		PasswordEncoder passwordEncoder,
+		EmailValidator emailValidator,
+		JobScheduler jobScheduler,
+		JavaMailSender javaMailSender,
+		EmailMessageFactory emailMessageFactory) {
 		
 		this.logger = logFactory.create(this);
 		this.userRepository = Preconditions.checkNotNull(userRepository);
@@ -41,6 +48,8 @@ public class UserServiceImpl implements UserService {
 		this.passwordEncoder = Preconditions.checkNotNull(passwordEncoder);
 		this.emailValidator = Preconditions.checkNotNull(emailValidator);
 		this.jobScheduler = Preconditions.checkNotNull(jobScheduler);
+		this.javaMailSender = Preconditions.checkNotNull(javaMailSender);
+		this.emailMessageFactory = Preconditions.checkNotNull(emailMessageFactory);
 	}
 	
 	@Override
@@ -57,7 +66,9 @@ public class UserServiceImpl implements UserService {
 		if (user != null) {
 			logger.debug("Sending email to {}", user.getEmailAddress());
 			SendEmailJob job = new SendEmailJob();
-			job.setRecipient(user.getEmailAddress());
+			job.setJavaMailSender(javaMailSender);
+			SimpleMailMessage message = emailMessageFactory.createWelcomeEmail(user);
+			job.setMessage(message);
 			jobScheduler.enqueue(job);
 		}
 		return user;

@@ -92,4 +92,8 @@ public class UserDomainObject {
 			
 		return errors;
 	}
+
+	public String getConfirmationToken() {
+		return confirmationToken;
+	}
 }
